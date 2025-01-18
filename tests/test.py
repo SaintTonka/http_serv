@@ -2,6 +2,7 @@ import pytest
 from aiohttp import web
 from routers import router
 import json
+from datetime import datetime, timedelta
 
 @pytest.fixture(scope="function")
 def clean_data_file():
@@ -116,7 +117,7 @@ async def test_city_weather(client, clean_data_file):
         "longitude": 37.6173
     })
 
-    time = '2025-01-20T10:00' 
+    time = datetime.now().strftime("%Y-%m-%dT%H:00") 
 
     # Тест успешного получения погоды для города
     response = await client.get(f"/city_weather?user_id={user_id}&city_name=Moscow&time={time}&params=temperature,windspeed")
