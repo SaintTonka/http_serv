@@ -1,10 +1,10 @@
 # Тестовое задание для стажера на позицию «Программист на языке Python»
-1 step:
+## 1 step after creating virt. env:
 pip install -r requirements.txt
-Build:
-python3 script.py Linux
-python script.py Win
-Running tests
+##Build:
+python3 script.py (Linux)
+python script.py (Win)
+##Running tests
 pytest tests/test.py -v
 
 # МЕТОДЫ АПИ
