@@ -1,11 +1,7 @@
-import aiohttp, asyncio
 from datetime import datetime, timedelta
-import logging
 from aiohttp import web
 from utils import load_data, receive_weather, generate_user_id, save_data
 
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
 app = web.Application()
 router = web.RouteTableDef()
 data_store = load_data()
@@ -32,10 +28,17 @@ async def register_user(request):
 @router.get("/weather")
 async def get(request):
     try:
-        lat = float(request.query.get("lat"))
-        lon = float(request.query.get("lon"))
+        lat = request.query.get("lat")
+        lon = request.query.get("lon")
+        
         if not lat or not lon:
             return web.json_response({"error": "Latitude and longitude are required"}, status=400)
+
+        try:
+            lat = float(lat)
+            lon = float(lon)
+        except ValueError:
+            return web.json_response({"error": "Latitude and longitude must be valid numbers"}, status=400)
 
         weather = await receive_weather(lat, lon)
         current_weather = weather.get("current_weather")
@@ -44,7 +47,6 @@ async def get(request):
             return web.json_response({
                 "temperature": current_weather.get("temperature"),
                 "wind_speed": current_weather.get("windspeed"),
-                "pressure": current_weather.get("pressure")
             })
         return web.json_response({"error": "Weather data not available"}, status=400)
 
@@ -97,8 +99,8 @@ async def city_weather(request):
         time = request.query.get("time")
         params = request.query.get("params", "").split(",")
         
-        if not (user_id and city_name and time and params):
-            return web.json_response({"error": "Not all attributes (user_id, city_name, time, params)"}, status=400)
+        if not (user_id and city_name and time):
+            return web.json_response({"error": "Not all attributes (user_id, city_name, time)"}, status=400)
         
         if user_id not in data_store["users"] or city_name not in data_store["users"][user_id]["cities"]:
             return web.json_response({"error": "City not found for the user"}, status=404)
@@ -110,7 +112,7 @@ async def city_weather(request):
             weather = await receive_weather(
                 float(city_data["latitude"]),
                 float(city_data["longitude"]),
-                hourly=",".join(params)
+                hourly="temperature,windspeed" 
             )
             city_data["forecast"] = weather.get("hourly", {})
             city_data["last_updated"] = datetime.now().isoformat()
@@ -120,10 +122,8 @@ async def city_weather(request):
         if not hourly_forecast or "time" not in hourly_forecast:
             return web.json_response({"error": "Weather data not available"}, status=404)
 
-        print("Available times:", hourly_forecast["time"])
         if time not in hourly_forecast["time"]:
             return web.json_response({"error": f"Time {time} not found in forecast data"}, status=404)
-
 
         time_index = hourly_forecast["time"].index(time)
         result = {param: hourly_forecast[param][time_index] for param in params if param in hourly_forecast}
