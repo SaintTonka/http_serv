@@ -3,11 +3,11 @@
 ## 1 step after creating virt. env:
 pip install -r requirements.txt
 
-##Build:
+## Build:
 python3 script.py (Linux)
 python script.py (Win)
 
-##Running tests
+## Running tests
 pytest tests/test.py -v
 
 # МЕТОДЫ АПИ
