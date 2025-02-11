@@ -1,5 +1,3 @@
-# Тестовое задание для стажера на позицию «Программист на языке Python»
-
 ## 1 step after creating virt. env:
 pip install -r requirements.txt
 
